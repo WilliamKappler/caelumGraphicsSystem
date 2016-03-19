@@ -13,15 +13,15 @@
 	PERFORMANCE OF THIS SOFTWARE. */
 
 // TODO:
-// * Add the ability to write to only specific locations in a VBO (ie, don't
-// require writing the whole VBO to beginning to end; allow the internal pointer
-// to be overridden, like with indexes).
-// * Only re-upload VBOs that have been changed?
+// * Add the ability to write to only specific locations in a stream (ie, don't
+// require writing the whole stream to beginning to end; allow the internal 
+// pointer to be overridden, like with indexes).
+// * Only re-upload data streams that have been changed?
 // * In the future, there will only be one stream, one stream to rule them all,
-// which is broken up into virtual VBOs. Each mesh will just get a block of that
-// stream to work with. Ogre2 does this. However, that may or may not take forever
-// to implement, especially since performance with this system is likely to
-// already be substantially better than Ogre1, enough that the fragment shaders
+// which is broken up into virtual streams. Each mesh will just get a block of 
+// that stream to work with. Ogre2 does this. However, that may or may not take 
+// forever to implement, especially since performance with this system is likely 
+// to already be substantially better than Ogre1, enough that the fragment shaders
 // are likely going to be the bottleneck well beyond everything else involved.
 // * Ability to non-destructively resize the stream. Perhaps silently.
 
@@ -66,8 +66,8 @@ public:
 	inline uint32_t getID( ) const { return id; }
 
 	// Sets the render operation to use when calling glDrawArrays( ). See the docs
-	// of that for details. This does NOT modify the VBOs/stream, so changing
-	// it has no overhead. Default is GL_POINTS.
+	// of that for details. This does NOT modify the stream, so changing it has no
+	// overhead. Default is GL_POINTS.
 	// https://www.opengl.org/sdk/docs/man/html/glDrawArrays.xhtml
 	void setRenderOperation( const GLenum& mode );
 
@@ -76,15 +76,14 @@ public:
 	
 	// VERTEX BUFFER OBJECT + ATTRIBUTES FUNCTIONS ===============================
 
-	// Declare a VBO attribute to attach to the mesh - including position 0, the
-	// vertexes themselves. This invalidates the stream and generateDataStream( )
-	// must be called after this.
+	// Declare a vertex attribute to attach to the mesh - including position 0, 
+	// the vertexes themselves. This invalidates the stream and 
+	// generateDataStream( ) must be called after this.
 	// 
-	// Used vboIndex's do not have to be sequential, but they do have to line up
-	// with your shader input declarations. Shader input without an attached VBOA
-	// will be uninitialized data. You can attach a VBOA to your shader either
-	// using the layout directive in GLSL, or a (to be added) function within
-	// CGSProgramObject.
+	// The used attributeIndex's do not have to be sequential, but they do have to 
+	// line up with your shader input declarations. Shader input without an  
+	// associated vertex attribute defined in the mesh  will be populated with
+	// uninitialized data.
 	// 
 	// The type given must be a valid OpenGL type enum value. You should then use
 	// an EXACT equivalent to that value to pass your vertex data. Failing to do
@@ -105,46 +104,46 @@ public:
 	// not a float.
 	// * normalize can be used to convert an integer to a float on a range of
 	// -1/0 to +1. The minimum being -1 or 0 depends on signing.
-	void createVBOAttribute(
-			const GLuint& vboIndex, // VERTEX_BINDING_POINT_*
+	void createVertexAttribute(
+			const GLuint& attributeIndex, // VERTEX_BINDING_POINT_*
 			const GLenum& type, // Attribute type (GL_FLOAT, GL_HALF_FLOAT, etc)
 			const GLint& numberOfElements, // How many of TYPE per entry; 1-4
 			const bool& integerType = false, // Call glVertexAttrib(I)Pointer
 			const GLboolean& normalize = false // Normalize integer values
 			);
 
-	// Deletes the VBO attribute associated with vboIndex. Returns true if a VBO 
-	// attribute with that index existed and was deleted; returns false if the
-	// index is not found. If true is returned, the stream is invalidated and 
+	// Deletes the vertex attribute associated with attributeIndex. Returns true  
+	// if an attribute with that index existed and was deleted; returns false if 
+	// the index is not found. If true is returned, the stream is invalidated and 
 	// generateDataStream( ) must be called.
-	bool deleteVBOAttribute( const GLuint& vboIndex );
+	bool deleteVertexAttribute( const GLuint& attributeIndex );
 	
-	// Construct a new VBO stream for upload to the video card. Must be called
-	// after any call to createVBOAttribute( ). Deletes current data stored in the
-	// VBO. You probably only want to call this when creating the mesh.
+	// Construct a new data stream for upload to the video card. Must be called
+	// after any call to createVertexAttribute( ). Deletes current data stored in 
+	// the mesh. You probably only want to call this when creating the mesh.
 	//
 	// Length determines the number of points which will be created in the data
-	// stream. Each VBO attribute will have (length * numberOfElements) entries;
+	// stream. Each vertex attribute will have (length*numberOfElements) entries;
 	// for example, if length is 10 and you are writing to the position attribute
 	// (which has 3 parameters most of the time), you will have 30 entries, in
 	// the pattern of [x1 y1 z1 x2 y2 z2...x9 y9 z9 x10 y10 z10].
 	void generateDataStream( const uint16_t& length );
 
-	// Opens a VBO attribute for writing via writeToA( ). Returns true if the VBO 
-	// attribute with vboIndex is found and opened, false if it is not found. 
-	// Default position is the beginning of the VBO.
-	bool openVBO( const GLuint& vboIndex );
+	// Opens a vertex attribute for writing via writeToA( ). Returns true if the 
+	// attribute with attributeIndex is found and opened, false if it is not 
+	// found. Default position is the beginning of the data stream, vertex 0.
+	bool openAttribute( const GLuint& attributeIndex );
 
-	// Writes to the currently open VBO attribute in the current location, and 
+	// Writes to the currently open vertex attribute in the current location, and 
 	// automatically increments the internal pointer. Different declarations are 
-	// for different VBO attribute data types. You should pass the matching type 
-	// to ensure there are no errors.
+	// for different attribute data types. You should pass the matching type to
+	// ensure there are no errors.
 	//
 	// Note that you must pass single-precision "float" for half-float, as C/C++
-	// does not support this datatype natively. If the VBO attribute is 
-	// half-float, the  value will be down-converted to the right size 
-	// automatically. This is NOT true for doubles to floats, doubles to halves,
-	// or any other type, such as down-conversion between ints.
+	// does not support this datatype natively. If the attribute is half-float,
+	// the value will be down-converted to the right size automatically. This is
+	// NOT true for doubles to floats, doubles to halves, or any other type, such
+	// as down-conversion between ints.
 
 	// GL_FLOAT + GL_HALF_FLOAT
 	void writeToA( const float& d );
@@ -164,9 +163,9 @@ public:
 	void writeToA( const uint32_t& d );
 	// Fixed?
 
-	// Closes the currently open VBO attribute. Implicitly called by openVBO( ) if
-	// a VBO attribute is open for writing.
-	void closeVBO( );
+	// Closes the currently open vertex attribute. Implicitly called by 
+	// openAttribute( ) if a vertex attribute is already open for writing.
+	void closeAttribute( );
 
 	// INDEX BUFFER FUNCTION =====================================================
 	
@@ -518,15 +517,15 @@ public:
 	
 protected:
 	// GENERAL VARIABLES + PROTECTED TYPES =======================================
-	struct VBOData
+	struct VertexAttributeData
 	{
-		// vboIndex is the AssocArray key, so not stored here.
+		// the attr index is the AssocArray key, so not stored here.
 		GLenum type;
 		GLint numberOfElements;
 		bool useInterger;
 		GLboolean normalize;
 
-		uint16_t length; // Size, in bytes, this VBOA occupies
+		uint16_t length; // Size, in bytes, this attribute occupies
 		
 		uint16_t streamPointerOffset; // Where in the stride the attr data starts, in bytes
 	};
@@ -536,25 +535,25 @@ protected:
 	
 	// MESH VARIABLES ============================================================
 	GLuint vaoHandle; // Handle for the mesh's vao in OpenGL
-	GLuint vboDataBufferHandle;
+	GLuint vertexDataBufferHandle;
 	GLenum renderOperation; // Operation passed to glDrawArrays( )
 	
 	bool visible; // If true, draws when _render( ) is called
 	bool steamIsValid; // If false, generateDataStream( ) is needed
 	bool steamUpdated; // If true, the stream will be uploaded before binding
 	
-	GLuint calculatedStreamStride; // Length of VBO blocks (vertexes)
+	GLuint calculatedStreamStride; // Length of vertex data blocks (vertexes)
 
-	GLuint openVBOAIndex; // Index of the VBO in use, -1 if none.
-	uint16_t openVBOAPosition; // The "Internal pointer" starting at 0.
-	GLenum openVBOAType; // A copy of "type" for the open VBO [optimization]
-	GLint openVBOANumberOfElements; // Copy of numberOfElements [optimization]
-	uint8_t openVBOAStride; // The spacing BETWEEN the open elements [optimization]
-	uint16_t openVBOAOffset; // Where in the stream the data begins [optimization]
+	GLuint openAttributeIndex; // Index of the attr in use, -1 if none.
+	uint16_t openAttributePosition; // The "Internal pointer" starting at 0.
+	GLenum openAttributeType; // A copy of "type" for the open attr [optimization]
+	GLint openAttributeNumberOfElements; // Copy of numberOfElements [optimization]
+	uint8_t openAttributeStride; // The spacing BETWEEN the open elements [optimization]
+	uint16_t openAttributeOffset; // Where in the stream the data begins [optimization]
 	
-	// VBO attribute definitions
-	// < VBO bound index, VBO data >
-	AssocArray< GLuint, VBOData > vboaDefinitions;
+	// Attribute definitions
+	// < bound attr index, vertex attr data >
+	AssocArray< GLuint, VertexAttributeData > attributeDefinitions;
 
 	// Raw bytes of data to stream to the GPU - needs cast for any operations
 	// NULL if no stream is allocated. Number of chars is equal to:
@@ -565,7 +564,7 @@ protected:
 	// Index data, if used
 	bool useIndexes;
 	bool indexesUpdated;
-	GLuint vboIndexBufferHandle;
+	GLuint indexBufferHandle;
 	Array< uint32_t > indexData;
 	uint16_t indexPosition;
 	
@@ -578,11 +577,11 @@ protected:
 	
 	// PROTECTED MESH FUNCTIONS ==================================================
 	
-	// Uses the variables for the currently open VBOA
+	// Uses the variables for the currently open attribute
 	void* _getDataLocationPointer( );
 	
-	// Checls that a valid VBOA (!= -1) is open and the types match
-	bool _checkOpenVBOA( const GLenum& _functionType );
+	// Checks that a valid attr (!= -1) is open and the types match
+	bool _checkOpenAttribute( const GLenum& _functionType );
 	
 	// Back-end for writeToA( )
 	void _writeToABackend( const void* const& dP, const GLenum& _type );

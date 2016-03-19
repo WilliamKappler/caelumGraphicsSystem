@@ -32,9 +32,9 @@ CGSMesh::CGSMesh( const GLenum& _renderOperation )
 {
 	id = nextMeshObjectID++;
 	glGenVertexArrays( 1, &vaoHandle );
-	glGenBuffers( 1, &vboDataBufferHandle );
-	// The VBO for indexes is only created if such is called for
-	vboIndexBufferHandle = 0;
+	glGenBuffers( 1, &vertexDataBufferHandle );
+	// The buffer for indexes is only created if such is called for
+	indexBufferHandle = 0;
 	renderOperation = _renderOperation;
 	
 	visible = true;
@@ -45,7 +45,7 @@ CGSMesh::CGSMesh( const GLenum& _renderOperation )
 	
 	calculatedStreamStride = -1;
 	
-	openVBOAIndex = -1;
+	openAttributeIndex = -1;
 	
 	useIndexes = false;
 	
@@ -79,9 +79,9 @@ CGSMesh::~CGSMesh( )
 	
 	// Delete the vertex array created in the constructor
 	glDeleteVertexArrays( 1, &vaoHandle );
-	glDeleteBuffers( 1, &vboDataBufferHandle );
+	glDeleteBuffers( 1, &vertexDataBufferHandle );
 	// If this tries to delete zero, it's ok, OpenGL ignores it
-	glDeleteBuffers( 1, &vboIndexBufferHandle );
+	glDeleteBuffers( 1, &indexBufferHandle );
 }
 
 void CGSMesh::setRenderOperation( const GLenum& mode )
@@ -89,23 +89,23 @@ void CGSMesh::setRenderOperation( const GLenum& mode )
 	renderOperation = mode;
 }
 
-void CGSMesh::createVBOAttribute(
-			const GLuint& vboIndex,
+void CGSMesh::createVertexAttribute(
+			const GLuint& attributeIndex,
 			const GLenum& type,
 			const GLint& numberOfElements,
 			const bool& integerType,
 			const GLboolean& normalize )
 {
-	AssocArray< GLuint, VBOData >::iterator i = vboaDefinitions.find( vboIndex );
+	AssocArray< GLuint, VertexAttributeData >::iterator i = attributeDefinitions.find( attributeIndex );
 	
 	// If a definition does not exist, create one
-	if( i == vboaDefinitions.end() )
+	if( i == attributeDefinitions.end() )
 	{
-		i = vboaDefinitions.insert( U::p( vboIndex, VBOData() ) ).first;
+		i = attributeDefinitions.insert( U::p( attributeIndex, VertexAttributeData() ) ).first;
 	}
 	else
 	{
-		U::log( "Warning: Duplicate VBO Attribute created for index ", vboIndex,
+		U::log( "Warning: Duplicate vertex attribute created for index ", attributeIndex,
 				" in MeshObject with ID ", getID( ) );
 	}
 	
@@ -119,13 +119,13 @@ void CGSMesh::createVBOAttribute(
 	steamIsValid = false;
 }
 
-bool CGSMesh::deleteVBOAttribute( const GLuint& vboIndex )
+bool CGSMesh::deleteVertexAttribute( const GLuint& attributeIndex )
 {
-	AssocArray< GLuint, VBOData >::iterator i = vboaDefinitions.find( vboIndex );
+	AssocArray< GLuint, VertexAttributeData >::iterator i = attributeDefinitions.find( attributeIndex );
 	
-	if( i != vboaDefinitions.end( ) )
+	if( i != attributeDefinitions.end( ) )
 	{
-		vboaDefinitions.erase( i );
+		attributeDefinitions.erase( i );
 		steamIsValid = false;
 		return true;
 	}
@@ -140,8 +140,8 @@ void CGSMesh::generateDataStream( const uint16_t& length )
 	// Calculate the stride
 	calculatedStreamStride = 0;
 	
-	AssocArray< GLuint, VBOData >::iterator aDefI = vboaDefinitions.begin( );
-	while( aDefI != vboaDefinitions.end( ) )
+	AssocArray< GLuint, VertexAttributeData >::iterator aDefI = attributeDefinitions.begin( );
+	while( aDefI != attributeDefinitions.end( ) )
 	{
 		// Set where this data will begin, which is whatever the currently
 		// built up stride is. 0 for the first block of data
@@ -165,11 +165,11 @@ void CGSMesh::generateDataStream( const uint16_t& length )
 	{
 		stream = new uint8_t[ calculatedStreamStride * streamLength ];
 
-		// Reset the open VOBA to none; user shouldn't have an open VBOA calling this,
-		// but if they do, it should be closed.
-		openVBOAIndex = -1;
+		// Reset the open attribute to none; user shouldn't have an open attribute
+		// when calling this, but if they do, it should be closed.
+		openAttributeIndex = -1;
 
-		// Stream is now valid for VBOAs declared
+		// Stream is now valid for attributes declared
 		steamIsValid = true;
 
 		// Stream needs uploaded to video card next frame or sooner - Hopefully after
@@ -178,7 +178,7 @@ void CGSMesh::generateDataStream( const uint16_t& length )
 	}
 	else
 	{
-		U::log( "Warning: generateDataStream() called on mesh with no VBO attributes (not even position), resulting in a zero-length (invalid) stream, in MeshObject with ID ", getID( ) );
+		U::log( "Warning: generateDataStream() called on mesh with no vertex attributes (not even position), resulting in a zero-length (invalid) stream, in MeshObject with ID ", getID( ) );
 
 		// Failsafe values
 		stream = NULL;
@@ -186,29 +186,29 @@ void CGSMesh::generateDataStream( const uint16_t& length )
 	}
 }
 
-bool CGSMesh::openVBO( const GLuint& vboIndex )
+bool CGSMesh::openAttribute( const GLuint& attributeIndex )
 {
-	if( openVBOAIndex != ( GLuint )( -1 ) )
+	if( openAttributeIndex != ( GLuint )( -1 ) )
 	{
 		// No warning necessary, this is acceptable, at least for now
-		closeVBO( );
+		closeAttribute( );
 		return false;
 	}
 	
-	AssocArray< GLuint, VBOData >::iterator aDefI = vboaDefinitions.find( vboIndex );
-	if( aDefI == vboaDefinitions.end( ) )
+	AssocArray< GLuint, VertexAttributeData >::iterator aDefI = attributeDefinitions.find( attributeIndex );
+	if( aDefI == attributeDefinitions.end( ) )
 	{
-		U::log( "Warning: openVBO() called with non-existent VBO index '", vboIndex, "', in MeshObject with ID ", getID( ) );
+		U::log( "Warning: openAttribute() called with non-existent index '", attributeIndex, "', in MeshObject with ID ", getID( ) );
 
 		return false;
 	}
 	
-	openVBOAIndex = vboIndex;
-	openVBOAPosition = 0;
-	openVBOAType = aDefI->second.type;
-	openVBOANumberOfElements = aDefI->second.numberOfElements;
-	openVBOAStride = calculatedStreamStride - aDefI->second.length;
-	openVBOAOffset = aDefI->second.streamPointerOffset;
+	openAttributeIndex = attributeIndex;
+	openAttributePosition = 0;
+	openAttributeType = aDefI->second.type;
+	openAttributeNumberOfElements = aDefI->second.numberOfElements;
+	openAttributeStride = calculatedStreamStride - aDefI->second.length;
+	openAttributeOffset = aDefI->second.streamPointerOffset;
 	return true;
 }
 
@@ -216,43 +216,44 @@ void* CGSMesh::_getDataLocationPointer( )
 {
 	// stream is a 1-byte type, not void*, so this is valid
 	return stream + (
-			openVBOAOffset
-			// Jumps between sections of this VBOA's data
-			+ ( openVBOAPosition / openVBOANumberOfElements ) * calculatedStreamStride
-			// Increments within VBOA data block
-			+ ( openVBOAPosition % openVBOANumberOfElements ) * GraphicsSystem::oglSizeOf( openVBOAType ) );
+			// The position in a given vertex where the current attribute resides
+			openAttributeOffset
+			// Jumps between the vertex data blocks
+			+ ( openAttributePosition / openAttributeNumberOfElements ) * calculatedStreamStride
+			// Increments within the attribute itself, if multi-element
+			+ ( openAttributePosition % openAttributeNumberOfElements ) * GraphicsSystem::oglSizeOf( openAttributeType ) );
 }
 
-bool CGSMesh::_checkOpenVBOA( const GLenum& _functionType )
+bool CGSMesh::_checkOpenAttribute( const GLenum& _functionType )
 {
-	// No (valid) VBO attribute index open
-	if( openVBOAIndex == ( GLuint )( -1 ) )
+	// No (valid) vertex attribute index open
+	if( openAttributeIndex == ( GLuint )( -1 ) )
 	{
 		return false;
 	}
 	
 	// Current location at/past end of stream
-	if( openVBOAPosition >= streamLength * openVBOANumberOfElements )
+	if( openAttributePosition >= streamLength * openAttributeNumberOfElements )
 	{
 		return false;
 	}
 	
 	// Types match. Note the float function is used for half floats
-	if( _functionType == openVBOAType
-			|| ( _functionType == GL_FLOAT && openVBOAType == GL_HALF_FLOAT ) )
+	if( _functionType == openAttributeType
+			|| ( _functionType == GL_FLOAT && openAttributeType == GL_HALF_FLOAT ) )
 	{
 		return true;
 	}
 	
-	U::log( "Error: Open VBO attribute type does not match type passed to writeToA() in MeshObject with ID ", getID( ) );
+	U::log( "Error: Open vertex attribute type does not match type passed to writeToA() in MeshObject with ID ", getID( ) );
 	return false;
 }
 
 void CGSMesh::_writeToABackend( const void* const& dP, const GLenum& _type )
 {
-	if( !_checkOpenVBOA( _type ) )
+	if( !_checkOpenAttribute( _type ) )
 	{
-		U::log( "Error: Invalid VBO attribute write operation called in MeshObject with ID ", getID( ) );
+		U::log( "Error: Invalid vertex attribute write operation called in MeshObject with ID ", getID( ) );
 		
 		return;
 	}
@@ -261,7 +262,7 @@ void CGSMesh::_writeToABackend( const void* const& dP, const GLenum& _type )
 			dP,
 			GraphicsSystem::oglSizeOf( _type ) );
 	
-	++openVBOAPosition;
+	++openAttributePosition;
 }
 
 void CGSMesh::writeToA( const float& d )
@@ -269,7 +270,7 @@ void CGSMesh::writeToA( const float& d )
 	
 	// TEMPORARY: Half-float support needs implemented. Need way to cast float
 	// to half-float in C++.
-	if( openVBOAType == GL_HALF_FLOAT )
+	if( openAttributeType == GL_HALF_FLOAT )
 	{
 		uint16_t half = floatToHalf( d );
 		_writeToABackend( &half, GL_HALF_FLOAT );
@@ -314,18 +315,18 @@ void CGSMesh::writeToA( const uint32_t& d )
 	_writeToABackend( &d, GL_UNSIGNED_INT );
 }
 
-void CGSMesh::closeVBO( )
+void CGSMesh::closeAttribute( )
 {
-	if( openVBOAPosition != streamLength * openVBOANumberOfElements )
+	if( openAttributePosition != streamLength * openAttributeNumberOfElements )
 	{
-		U::log( "Warning: Incomplete write to VBO attribute with attribute index '",
-				openVBOAIndex, "' [", openVBOAPosition, " out of ",
-				streamLength * openVBOANumberOfElements,
+		U::log( "Warning: Incomplete write to vertex attribute with attribute index '",
+				openAttributeIndex, "' [", openAttributePosition, " out of ",
+				streamLength * openAttributeNumberOfElements,
 				" elements written] in MeshObject with ID ", getID( ) );
 	}
 	
 	steamUpdated = true;
-	openVBOAIndex = -1;
+	openAttributeIndex = -1;
 }
 
 void CGSMesh::createIndexBuffer( const uint16_t& preallocate )
@@ -338,7 +339,7 @@ void CGSMesh::createIndexBuffer( const uint16_t& preallocate )
 	}
 	else
 	{
-		glGenBuffers( 1, &vboIndexBufferHandle );
+		glGenBuffers( 1, &indexBufferHandle );
 		useIndexes = true;
 	}
 	
@@ -384,7 +385,7 @@ void CGSMesh::clearIndexBuffer( )
 void CGSMesh::deleteIndexBuffer( )
 {
 	// Is this sufficient to remove indexes?
-	glDeleteBuffers( 1, &vboIndexBufferHandle );
+	glDeleteBuffers( 1, &indexBufferHandle );
 	indexData.resize( 0 );
 	useIndexes = false;
 }
@@ -400,13 +401,6 @@ void CGSMesh::_update( )
 	
 	_linkProgram( );
 	
-	// glBindVertexArray
-	// glBindBuffer
-	// glBufferData with NULL
-	// glBufferData with data
-	// repeat; GL_ELEMENT_ARRAY_BUFFER for indexes and GL_ARRAY_BUFFER for VBOA stream
-	// glVertexAttribPointer with VBOA buffer bound
-	
 	if( !steamIsValid )
 	{
 		U::log( "Error: Cannot upload mesh data to OpenGL as vertex attributes are not valid. This is likely due to failing to call generateDataStream( ) and populate the stream with valid data." );
@@ -419,7 +413,7 @@ void CGSMesh::_update( )
 	// Indexes
 	if( useIndexes && indexesUpdated )
 	{
-		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, vboIndexBufferHandle );
+		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, indexBufferHandle );
 		
 		// Dump the current data - orphan it
 		glBufferData( GL_ELEMENT_ARRAY_BUFFER, 0, NULL, GL_DYNAMIC_DRAW );
@@ -438,13 +432,13 @@ void CGSMesh::_update( )
 	// Vertex attribute data - much more complex
 	if( steamUpdated )
 	{
-		glBindBuffer( GL_ARRAY_BUFFER, vboDataBufferHandle );
+		glBindBuffer( GL_ARRAY_BUFFER, vertexDataBufferHandle );
 		glBufferData( GL_ARRAY_BUFFER, 0, NULL, GL_DYNAMIC_DRAW );
 		glBufferData( GL_ARRAY_BUFFER, streamLength * calculatedStreamStride, stream, GL_DYNAMIC_DRAW );
 		
 		// Define attribute locations
-		for( AssocArray< GLuint, VBOData >::iterator i = vboaDefinitions.begin( );
-			i != vboaDefinitions.end( ); ++i )
+		for( AssocArray< GLuint, VertexAttributeData >::iterator i = attributeDefinitions.begin( );
+			i != attributeDefinitions.end( ); ++i )
 		{
 			if( i->second.useInterger )
 			{
@@ -513,6 +507,9 @@ void CGSMesh::_render( )
 	{
 		numberOfVertexes = streamLength;
 	}
+	
+	// Moved this from _update( ) - I seem to have misplaced it there when I wrote
+	// this. Textures are bound to render, not update.
 	
 	// Bind textures
 	for( auto i = textures.begin( ); i != textures.end( ); ++i )
