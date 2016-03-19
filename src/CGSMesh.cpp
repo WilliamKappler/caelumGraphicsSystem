@@ -413,12 +413,6 @@ void CGSMesh::_update( )
 		return;
 	}
 	
-	// Bind textures
-	for( auto i = textures.begin( ); i != textures.end( ); ++i )
-	{
-		i->second.bind( );
-	}
-	
 	// Bind the VAO
 	glBindVertexArray( vaoHandle );
 	
@@ -518,6 +512,12 @@ void CGSMesh::_render( )
 	else
 	{
 		numberOfVertexes = streamLength;
+	}
+	
+	// Bind textures
+	for( auto i = textures.begin( ); i != textures.end( ); ++i )
+	{
+		i->second.bind( );
 	}
 	
 	// Actually draw the mesh
