@@ -35,7 +35,8 @@ case, it has the following dependencies:
 * FreeImage
 
 If building on Windows, it is strongly suggested you obtain these via MSYS2:
-< http://msys2.github.io/ >.
+< http://msys2.github.io/ >. OpenGL will be provided by your video drivers
+(AMD, Nvidia, Intel, etc.), so ensure those are up to date.
 
 CGS is only officially supported for GCC compilers. It may, however, work for any
 other with the proper configuration. C++11 support is required.
@@ -60,7 +61,8 @@ Bote that the "32" is there even if you are using mingw64 via MSYS2. Control
 - With any platform-specifc compiler flags
 ("-mwin32" is REQUIRED for MSYS2)
 - Adjust CMAKE_CXX_FLAGS to your liking
-2. Build CGS
+2. Run cmake and build CGS
+(With MSYS2, use: 'cmake -G "MSYS Makefiles"')
 3. Link CGS to your program as you would any other library. You may also need
 to link your program directly to GLEW and GLUT for some functionality currently.
 4. Ensure you place the CGS library somewhere your program will find it at
