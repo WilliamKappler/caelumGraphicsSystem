@@ -1,0 +1,119 @@
+Caelum Graphics System (CGS), Pre-Release Development Version (unnumbered)
+
+// PURPOSE AND GENERAL USAGE =====================================================
+
+CGS is a minimalist C++ wrapper for modern OpenGL (4.x). It is built around making
+the sort of operations many graphics APIs (such as Ogre3D) treat as "advanced"
+functionality core to its usage. This makes CGS far more efficient and powerful
+than most graphical APIs, at the cost of a higher learning curve.
+
+Examples of CGS' power-user functionality include:
+* The ability to directly read and write to textures through a simplified
+interface with minimal overhead
+* GLSL shaders are integral to CGS' operation; there is no fixed function
+* Shader programs have per-mesh state (this can however introduce some overhead 
+and will be enhanced in the future to be less wasteful)
+* Vertex attributes and their types are entirely defined by the user
+
+I plan to port CGS to Vulkan in the near future. There should be minimal API
+changes in this shift, as CGS was already built with an external interface
+designed to be friendly to using Vulkan (or similar).
+
+CGS is not now and probably will not be thread-safe. It is possible it will be
+made so during the Vulkan shift, but I am skeptical how useful a multi-threaded
+graphics API really is. You can, of course, use CGS in a multi-threaded project
+as long as you only access CGS (and OpenGL, if you make external calls) with one
+thread. This is indeed the expected usage.
+
+// BUILDING ======================================================================
+
+CGS can be built either directly into your program or as a library. In either
+case, it has the following dependencies:
+* OpenGL 4.1+ hardware and drivers
+* GLEW and GLUT (eg, freeglut)
+* SDL2
+* FreeImage
+
+If building on Windows, it is strongly suggested you obtain these via MSYS2:
+< http://msys2.github.io/ >.
+
+CGS is only officially supported for GCC compilers. It may, however, work for any
+other with the proper configuration. C++11 support is required.
+
+== Build into Project ==
+The suggested way (currently) to use CGS is to build it directly into your project
+(game/product/whatever). To do this:
+
+1. Add CGS's sources (src) and headers (inc) to your build
+2. Add the path to CGS' dependencies to your link search paths
+3. Add CGS's dependencies to your link
+(On Windows + MSYS2, these are: "glew32 glu32 opengl32 SDL2main SDL2 freeimage".
+Bote that the "32" is there even if you are using mingw64 via MSYS2. Control
+32 bit vs 64 bit via the search path.)
+4. Build your project normally
+
+== Build as Library ==
+
+1. Update the provided CMakeLists.txt:
+- With your system include and library paths to where the dependencies reside
+(System_Include_Path and System_Library_Path)
+- With any platform-specifc compiler flags
+("-mwin32" is REQUIRED for MSYS2)
+- Adjust CMAKE_CXX_FLAGS to your liking
+2. Build CGS
+3. Link CGS to your program as you would any other library. You may also need
+to link your program directly to GLEW and GLUT for some functionality currently.
+4. Ensure you place the CGS library somewhere your program will find it at
+runtime. On Windows, the best place is usually the same directory as the EXE.
+
+Currently supported/tested systems:
+* Windows 7 64 bit
+* ...
+
+// CONTACT =======================================================================
+
+Official Repo: https://github.com/WilliamKappler/caelumGraphicsSystem
+(This is subject to change in the near future)
+Documentation Wiki: http://onathacar.fredlawl.com/
+
+Please email me if you have any questions, concerns, requests, or contributions
+at < wekapple@ncsu.edu >.
+
+// LICENSE =======================================================================
+
+CGS is licensed under the extremely permissive ISC license, which is essentially
+a less wordy MIT license. See LICENSE for the proper project-wide license terms.
+Note, however, that some CGS dependencies might have different licenses.
+
+How to handle the location of the license notice for MIT/BSD-like licenses is
+often a point of confusion. I will say I am not particularly concerned with how
+or where you include it, nor is any particular location required by the license,
+but I suggest one of the following:
+
+* The credits scroll (games)
+* A document distributed with your program (README, manual, etc.)
+* The "about" dialog/page
+* A "licenses" or such console command (CLI programs especially)
+* Included CGS sources
+
+Because the wording of the license might be confusing if merely included on its
+own (it might imply your program is distributed under it as well), I suggest
+prefixing CGS's ISC license for clairity. For example:
+
+This program uses the Caelum Graphics System, distributed under the ISC license:
+	Copyright (c) 2015-2016, William Kappler
+
+	Permission to use, copy, modify, and/or distribute this software for any
+	purpose with or without fee is hereby granted, provided that the above
+	copyright notice and this permission notice appear in all copies.
+
+	THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+	WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+	MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+	ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+	WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+	ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+	OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+The above likely holds for other MIT/BSD like licenses, but do not consider this
+legal advice.
