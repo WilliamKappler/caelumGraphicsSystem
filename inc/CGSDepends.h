@@ -15,6 +15,27 @@
 #ifndef CGSDEPENDS_H
 #define	CGSDEPENDS_H
 
+// OpenGL
+
+#ifdef _WIN32
+#include <windef.h> // Must come before glew
+#include "GL/glew.h" // Must come before OpenGL (SDL)
+//#include "glxew.h"
+//#include "wglew.h"
+#else
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#include <OpenGL/glext.h>
+#include <OpenGL/gl3.h>
+#include <OpenGL/glu.h>
+#endif
+#endif
+// Linux support needs added. Should be similar to Windows for the most part.
+
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_opengl.h"
+#include "SDL2/SDL_syswm.h"
+
 // Standard
 
 #include "iostream"
@@ -75,9 +96,9 @@ class CGSTexture;
 class CGSStandardTexture;
 class CGSRectangleTexture;
 class CGSMeshToTextureAdapter;
-enum class TextureType;
-enum class TextureDimensionality;
-enum class TextureFormat;
+enum class TextureType : uint8_t;
+enum class TextureDimensionality : GLenum;
+enum class TextureFormat : GLenum;
 
 #ifndef NDEBUG
 # define CGS_NDEBUG

@@ -13,7 +13,7 @@
 	PERFORMANCE OF THIS SOFTWARE. */
 
 #include "CGSTypeConversions.h"
-#include "Utility.h"
+#include "CGSUtility.h"
 
 uint8_t floatToUNORM8( const float& d )
 {

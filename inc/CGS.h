@@ -27,25 +27,6 @@
 #include "CGSUtility.h"
 #include "CGSVectors.h"
 
-#ifdef _WIN32
-# include <windef.h> // Must come before glew
-# include "glew.h" // Must come before OpenGL (SDL)
-//# include "glxew.h"
-//# include "wglew.h"
-#else
-# ifdef __APPLE__
-#  include <GLUT/glut.h>
-#  include <OpenGL/glext.h>
-#  include <OpenGL/gl3.h>
-#  include <OpenGL/glu.h>
-# endif
-#endif
-// Linux support needs added. Should be similar to Windows for the most part.
-
-#include "SDL.h"
-#include "SDL_opengl.h"
-#include "SDL_syswm.h"
-
 // This is typed and assigned to be compatible with OpenGL's GLSL functions.
 enum class ShaderType : GLenum
 {

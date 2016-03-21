@@ -15,7 +15,7 @@
 #ifndef CGSTYPECONVERSIONS_H
 #define	CGSTYPECONVERSIONS_H
 
-#include "EngineTypes.h"
+#include "CGSDepends.h"
 
 // This is used to adjust the floating point -> integer conversion to be more in
 // line with what sane people expect. Normally, positive always rounds down, and

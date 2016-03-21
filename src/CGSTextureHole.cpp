@@ -15,7 +15,7 @@
 #include "CGSTypeConversions.h"
 #include "CGSTextureHole.h"
 #include "CGSTexture.h"
-#include "Utility.h"
+#include "CGSUtility.h"
 
 #ifndef DISABLE_TEXTURE_HOLE_SIZE_CHECKS
 CGSTextureHole::CGSTextureHole( uint8_t* const& address, const uint8_t& _channelSize, bool* _textureModifiedFlag )
