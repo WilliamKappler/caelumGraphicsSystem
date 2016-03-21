@@ -60,7 +60,7 @@ Bote that the "32" is there even if you are using mingw64 via MSYS2. Control
 (System_Include_Path and System_Library_Path)
 - With any platform-specifc compiler flags
 ("-mwin32" is REQUIRED for MSYS2)
-- Adjust CMAKE_CXX_FLAGS to your liking
+- Adjust Special_CXX_Flags to your liking
 2. Run cmake and build CGS
 (With MSYS2, use: 'cmake -G "MSYS Makefiles"')
 3. Link CGS to your program as you would any other library. You may also need
