@@ -15,6 +15,13 @@ interface with minimal overhead
 and will be enhanced in the future to be less wasteful)
 * Vertex attributes and their types are entirely defined by the user
 
+#NOTE# CGS currently lacks what is usually considered a core component of graphics
+APIs: a scene graph. As a result, it is not possible to handle transforms, moving,
+sorting, clipping, and various other operations automatically. This effectively
+limits CGS to 2D rendering, very controlled 3D, GUIs, fractals, and several other
+applications that don't depend highly on 3D space positioning of objects. A scene
+graph is planned in the near future.
+
 I plan to port CGS to Vulkan in the near future. There should be minimal API
 changes in this shift, as CGS was already built with an external interface
 designed to be friendly to using Vulkan (or similar).
