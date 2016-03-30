@@ -15,10 +15,11 @@
 #ifndef CGSVECTORS_H
 #define CGSVECTORS_H
 
-#define __STDC_LIMIT_MACROS
+//#define __STDC_LIMIT_MACROS // Required, but now set via cmake/build command
 #include <stdint.h>
 #include <assert.h>
 #include <math.h>
+#include <type_traits>
 
 // These are effectively C++ versions of GLSL's vector classes, intended to be
 // used for storing similar such data. These possess many of the same qualities
