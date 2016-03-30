@@ -10,7 +10,7 @@ set(System_Library_Path "/c/msys2/mingw64/lib")
 
 set(Required_Platform_CXX_Flags "-mwin32") #-mwin32 is required on Windows with some MSYS (esp. MSYS2)
 set(Warning_CXX_Flags "-Wall -Wno-unused-but-set-variable -Wno-unused-variable -Wshadow -Wno-deprecated-declarations")
-set(Special_CXX_Flags "-ffast-math -g -o0 -Wfatal-errors")
+set(Special_CXX_Flags "-ffast-math -g -o0") # -Wfatal-errors
 
 project(${Project_Name})
 

@@ -17,6 +17,8 @@
 
 #define __STDC_LIMIT_MACROS
 #include <stdint.h>
+#include <assert.h>
+#include <math.h>
 
 // These are effectively C++ versions of GLSL's vector classes, intended to be
 // used for storing similar such data. These possess many of the same qualities
@@ -49,29 +51,25 @@ public:
 	T d[E];
 	
 	// Each of these refers to a cell of the d array.
-	T& x;
-	T& y;
+	T& x( ) { return this->d[0]; }
+	T& y( ) { return this->d[1]; }
 	
-	T& r;
-	T& g;
+	T& r( ) { return this->d[0]; }
+	T& g( ) { return this->d[1]; }
 	
-	T& s;
-	T& t;
+	T& s( ) { return this->d[0]; }
+	T& t( ) { return this->d[1]; }
 	
-	// Initialize the references to point to the d cells.
 	_Vector2( )
-		: x( d[0] ), y( d[1] ),
-			r( d[0] ), g( d[1] ),
-			s( d[0] ), t( d[1] )
 	{}
 	
-	_Vector2( const T& _a, const T& _b ) : _Vector2::_Vector2( )
+	_Vector2( const T& _a, const T& _b )
 	{
 		d[0] = _a;
 		d[1] = _b;
 	}
 	
-	_Vector2( const _Vector2< T, 2 >& _in ) : _Vector2::_Vector2( )
+	_Vector2( const _Vector2< T, 2 >& _in )
 	{
 		d[0] = _in[0];
 		d[1] = _in[1];
@@ -80,13 +78,13 @@ public:
 	T& operator[]( const size_t _i )
 	{
 		assert( _i < E );
-		return d[_i];
+		return d[ _i ];
 	}
 	
 	const T& operator[]( const size_t _i ) const
 	{
 		assert( _i < E );
-		return d[_i];
+		return d[ _i ];
 	}
 	
 	// Must overload assignment - C++ does not like reference members with default operator=.
@@ -202,19 +200,16 @@ template< class T, size_t E = 3 >
 class _Vector3 : public _Vector2< T, E >
 {
 public:
-	T& z;
+	T& z( ) { return this->d[2]; }
 	
-	T& b;
+	T& b( ) { return this->d[2]; }
 	
-	T& p;
+	T& p( ) { return this->d[2]; }
 	
-	_Vector3( ) : 
-		_Vector2< T, E >::_Vector2( ),
-		z( this->d[2] ), b( this->d[2] ), p( this->d[2] )
+	_Vector3( )
 	{}
 	
 	_Vector3( const T& _a, const T& _b, const T& _c )
-		: _Vector3::_Vector3( )
 	{
 		// 'this' is necessary due to some arcane template rules.
 		this->d[0] = _a;
@@ -224,7 +219,6 @@ public:
 	
 protected:
 	_Vector3( const T* const& _in )
-		: _Vector3::_Vector3( )
 	{
 		this->d[0] = _in[0];
 		this->d[1] = _in[1];
@@ -254,19 +248,16 @@ template< class T, size_t E = 4 >
 class _Vector4 : public _Vector3< T, E >
 {
 public:
-	T& w;
+	T& w( ) { return this->d[3]; }
 	
-	T& a;
+	T& a( ) { return this->d[3]; }
 	
-	T& q;
+	T& q( ) { return this->d[3]; }
 	
-	_Vector4( ) : 
-		_Vector3< T, E >::_Vector3( ),
-		w( this->d[3] ), a( this->d[3] ), q( this->d[3] )
+	_Vector4( )
 	{}
 	
 	_Vector4( const T& _a, const T& _b, const T& _c, const T& _d )
-		: _Vector4::_Vector4( )
 	{
 		this->d[0] = _a;
 		this->d[1] = _b;
@@ -276,7 +267,6 @@ public:
 	
 protected:
 	_Vector4( const T* const& _in )
-		: _Vector4::_Vector4( )
 	{
 		this->d[0] = _in[0];
 		this->d[1] = _in[1];

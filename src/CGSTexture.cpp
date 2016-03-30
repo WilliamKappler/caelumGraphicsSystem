@@ -587,29 +587,29 @@ vec3 CGSTexture::_generateTextureUsedRange( )
 	
 	if( xTexelsAlloc && xTexels < xTexelsAlloc )
 	{
-		range.x = (float)xTexels / xTexelsAlloc;
+		range.x( ) = (float)xTexels / xTexelsAlloc;
 	}
 	else
 	{
-		range.x = 1.0;
+		range.x( ) = 1.0;
 	}
 	
 	if( yTexelsAlloc && yTexels < yTexelsAlloc )
 	{
-		range.y = (float)yTexels / yTexelsAlloc;
+		range.y( ) = (float)yTexels / yTexelsAlloc;
 	}
 	else
 	{
-		range.y = 1.0;
+		range.y( ) = 1.0;
 	}
 	
 	if( zTexelsAlloc && zTexels < zTexelsAlloc )
 	{
-		range.z = (float)zTexels / zTexelsAlloc;
+		range.z( ) = (float)zTexels / zTexelsAlloc;
 	}
 	else
 	{
-		range.z = 1.0;
+		range.z( ) = 1.0;
 	}
 	
 	return range;
