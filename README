@@ -20,11 +20,12 @@ APIs: a scene graph. As a result, it is not possible to handle transforms, movin
 sorting, clipping, and various other operations automatically. This effectively
 limits CGS to 2D rendering, very controlled 3D, GUIs, fractals, and several other
 applications that don't depend highly on 3D space positioning of objects. A scene
-graph is planned in the near future.
+graph is planned in the near future, and the render queue is designed with
+implementing one in mind.
 
 I plan to port CGS to Vulkan in the near future. There should be minimal API
 changes in this shift, as CGS was already built with an external interface
-designed to be friendly to using Vulkan (or similar).
+designed to be friendly to Vulkan (or similar).
 
 CGS is not now and probably will not be thread-safe. It is possible it will be
 made so during the Vulkan shift, but I am skeptical how useful a multi-threaded
